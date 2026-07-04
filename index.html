@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مساعد العيادة — موعد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   ⚙️  ZONE À PERSONNALISER PAR CLIENT  →  objet CLINIC dans le <script>.
+   ===================================================================== */
+:root{
+  --deep:#284A40; --mid:#5C8A79; --sage:#9DBCAF;
+  --ivory:#F7F5EF; --card:#FFFFFF; --ink:#1A2621;
+  --amber:#C0924E; --line:#E4E0D5; --soft:#EEF1EC;
+  --shadow:0 18px 50px -20px rgba(40,74,64,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:radial-gradient(120% 80% at 50% 0%,#EDEAE0 0%,var(--ivory) 60%);
+  color:var(--ink);display:flex;align-items:center;justify-content:center;
+  min-height:100dvh;padding:20px;
+}
+html[lang="ar"] body,html[lang="ar"] .msg,html[lang="ar"] .chip,html[lang="ar"] input{font-family:'Cairo',sans-serif}
+.phone{width:100%;max-width:430px;height:min(760px,94dvh);background:var(--card);
+  border-radius:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;
+  overflow:hidden;border:1px solid var(--line)}
+.top{background:linear-gradient(160deg,var(--deep),var(--mid));color:#fff;
+  padding:18px 20px 20px;position:relative;flex-shrink:0}
+.top .badge{display:flex;align-items:center;gap:11px}
+.dot{width:11px;height:11px;border-radius:50%;background:#7FE0B5;position:relative}
+.dot::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:#7FE0B5;opacity:.35;animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.5}100%{transform:scale(2.2);opacity:0}}
+.top h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:19px;line-height:1.15}
+html[lang="ar"] .top h1{font-family:'Cairo',sans-serif;font-weight:700}
+.top .sub{font-size:12.5px;opacity:.85;margin-top:2px}
+.langs{position:absolute;top:16px;inset-inline-end:16px;display:flex;gap:4px;
+  background:rgba(255,255,255,.14);padding:3px;border-radius:20px}
+.langs button{border:0;background:transparent;color:#fff;font:600 11px/1 Inter;
+  padding:5px 9px;border-radius:16px;cursor:pointer;opacity:.7;transition:.2s}
+.langs button.on{background:#fff;color:var(--deep);opacity:1}
+.chat{flex:1;overflow-y:auto;padding:20px 16px 8px;display:flex;flex-direction:column;gap:12px;background:var(--ivory)}
+.msg{max-width:82%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.55;
+  animation:rise .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:5px}
+.me{background:var(--deep);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+html[dir="rtl"] .bot{border-bottom-left-radius:16px;border-bottom-right-radius:5px}
+html[dir="rtl"] .me{border-bottom-right-radius:16px;border-bottom-left-radius:5px}
+.msg strong{font-weight:600}
+.typing{align-self:flex-start;background:var(--card);border:1px solid var(--line);
+  padding:13px 15px;border-radius:16px;display:flex;gap:4px}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--sage);animation:blink 1.3s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 12px}
+.chip{background:var(--soft);border:1px solid var(--line);color:var(--deep);
+  font:500 13px Inter;padding:9px 14px;border-radius:20px;cursor:pointer;transition:.15s}
+html[lang="ar"] .chip{font-family:'Cairo',sans-serif}
+.chip:hover{background:var(--deep);color:#fff;border-color:var(--deep)}
+.chip.gold{background:#fff;border-color:var(--amber);color:var(--amber)}
+.chip.gold:hover{background:var(--amber);color:#fff}
+.confirm{align-self:stretch;background:linear-gradient(160deg,#fff,#F3F6F2);
+  border:1px solid var(--sage);border-radius:16px;padding:16px;box-shadow:var(--shadow);animation:rise .4s both}
+.confirm .ok{display:flex;align-items:center;gap:8px;color:var(--deep);
+  font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:10px}
+html[lang="ar"] .confirm .ok{font-family:'Cairo',sans-serif;font-weight:700}
+.confirm .row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px dashed var(--line)}
+.confirm .row span:first-child{color:#7A857E}
+.confirm .row span:last-child{font-weight:600}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.confirm.urgent{background:linear-gradient(160deg,#FFF5F3,#FDE9E4);border-color:#E8A08F}
+.confirm.urgent .ok{color:#B23A22}
+.inbox{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:var(--card);flex-shrink:0}
+.inbox input{flex:1;border:1px solid var(--line);border-radius:22px;padding:11px 15px;font:400 14px Inter;outline:none;background:var(--ivory)}
+html[lang="ar"] .inbox input{font-family:'Cairo',sans-serif}
+.inbox input:focus{border-color:var(--mid)}
+.inbox button{border:0;background:var(--deep);color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:17px;display:grid;place-items:center;flex-shrink:0}
+html[dir="rtl"] .inbox button{transform:scaleX(-1)}
+.inbox button:hover{background:var(--mid)}
+.chat::-webkit-scrollbar{width:5px}.chat::-webkit-scrollbar-thumb{background:var(--sage);border-radius:5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top">
+    <div class="badge">
+      <span class="dot"></span>
+      <div><h1 id="cName">عيادة</h1><div class="sub" id="cStatus"></div></div>
+    </div>
+    <div class="langs">
+      <button data-l="ar" class="on">ع</button>
+      <button data-l="fr">FR</button>
+      <button data-l="en">EN</button>
+    </div>
+  </div>
+  <div class="chat" id="chat"></div>
+  <div class="chips" id="chips"></div>
+  <div class="inbox">
+    <input id="field" autocomplete="off">
+    <button id="send">➤</button>
+  </div>
+</div>
+
+<script>
+/* ================= ⚙️ DONNÉES CLINIQUE — à changer par client ================= */
+const CLINIC = {
+  name:   { ar:"عيادة بلو دنتال", fr:"Blue Dental Clinic", en:"Blue Dental Clinic" },
+  phone:  "+213 665 80 16 17",
+  address:{ ar:"تعاونية الأمل، ديلي إبراهيم، الشراقة، الجزائر", fr:"Coopérative El Amel, Dely Ibrahim, Chéraga, Alger", en:"El Amel, Dely Ibrahim, Chéraga, Algiers" },
+  hours:  { ar:"السبت–الخميس 9:00–18:00", fr:"Sam–Jeu 9h–18h", en:"Sat–Thu 9am–6pm" },
+  services: [
+    { id:'consult', price:'1 500 DA',   ar:'استشارة',              fr:'Consultation',          en:'Consultation' },
+    { id:'detartr', price:'3 000 DA',    ar:'تنظيف الأسنان',        fr:'Détartrage',            en:'Scaling & polish' },
+    { id:'blanch',  price:'20 000 DA',   ar:'تبييض الأسنان',        fr:'Blanchiment',           en:'Teeth whitening' },
+    { id:'facette', price:'حسب التقدير', ar:'واجهات تجميلية (فينير)',fr:'Facettes (Hollywood Smile)',en:'Veneers (Hollywood Smile)' },
+    { id:'implant', price:'حسب التقدير', ar:'زرع الأسنان',          fr:'Implant dentaire',      en:'Dental implant' },
+  ]
+};
+const leads = []; // 👉 les RDV capturés atterrissent ici
+function sendLead(payload){
+  try{
+    var body=Object.assign({
+      access_key:"44e573fb-2ee9-4676-880d-8c97b554fb25",
+      subject:"Nouveau RDV — Blue Dental",
+      from_name:"Assistant Blue Dental"
+    }, payload);
+    fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(body)
+    }).catch(function(e){console.log('Web3Forms error',e);});
+  }catch(e){console.log('Web3Forms error',e);}
+}
+/* ============================================================================= */
+
+const T = {
+  ar:{ dir:'rtl', status:"متصل · رد فوري",
+    hello:`مرحباً بكم في <strong>${CLINIC.name.ar}</strong> 👋 كيف يمكنني مساعدتكم؟`,
+    home:["🚨 حالة طارئة","📅 حجز موعد","💳 الأسعار","🕐 أوقات العمل","🦷 خدماتنا","🔁 تعديل / إلغاء موعد","📍 موقعنا","💬 التحدث مع موظف"],
+    pickService:"ممتاز. لأي خدمة تودّون الحجز؟",
+    pickDay:"جيّد. أي يوم يناسبكم؟",
+    pickTime:"وفي أي ساعة؟",
+    askName:"تمّ. باسم من أسجّل الموعد؟",
+    askPhone:"شكراً! رقم هاتف لتأكيد الموعد؟",
+    confirmTitle:"تم تسجيل الموعد",
+    fService:"الخدمة",fDay:"اليوم",fTime:"الساعة",fName:"الاسم",fPhone:"الهاتف",
+    done:"تمّ ✅ ستتصل بكم العيادة للتأكيد. إلى اللقاء قريباً!",
+    tarifsHead:"إليكم أسعارنا التقريبية:",
+    hoursMsg:`نحن مفتوحون: <strong>${CLINIC.hours.ar}</strong>.`,
+    servicesMsg:"إليكم الخدمات التي نقدّمها:",
+    findMsg:`📍 ${CLINIC.address.ar}<br>📞 <span class="ltr">${CLINIC.phone}</span>`,
+    human:"بكل سرور. اتركوا اسمكم ورقمكم وسيعاود أحد أفراد الفريق الاتصال بكم قريباً.",
+    fallback:"يمكنني مساعدتكم في حجز موعد، الأسعار، أوقات العمل أو خدماتنا. ماذا تودّون؟",
+    back:"↩︎ العودة للقائمة", pricesLabel:"الأسعار",
+    urgIntro:`نتفهّم أن الأمر عاجل. إذا كان هناك ألم شديد أو تورّم أو نزيف، اتصلوا بنا الآن على <span class="ltr">${CLINIC.phone}</span>. اتركوا لي اسمكم ورقمكم وسنعاود الاتصال بكم فوراً كأولوية.`,
+    urgAskName:"ما اسمكم من فضلكم؟",
+    urgAskPhone:"وما رقم هاتفكم للاتصال بكم فوراً؟",
+    urgTitle:"🚨 طلب عاجل — أولوية",
+    urgDone:"تمّ تسجيل طلبكم كأولوية 🚨 سنتصل بكم في أقرب وقت. اعتنوا بأنفسكم.",
+    modIntro:"بالتأكيد. سأساعدكم في تعديل أو إلغاء موعدكم.",
+    modAskName:"ما الاسم المسجّل به الموعد؟",
+    modAskPhone:"ورقم هاتفكم؟",
+    modAskNote:"ما التغيير المطلوب؟ (تاريخ جديد أو «إلغاء»)",
+    modTitle:"🔁 طلب تعديل موعد",
+    fNote:"الطلب",
+    modDone:"تمّ إرسال طلبكم ✅ ستؤكّد لكم العيادة قريباً."
+  },
+  fr:{ dir:'ltr', status:"En ligne · réponse immédiate",
+    hello:`Bonjour et bienvenue à <strong>${CLINIC.name.fr}</strong> 👋 Comment puis-je vous aider ?`,
+    home:["🚨 Urgence","📅 Prendre RDV","💳 Tarifs","🕐 Horaires","🦷 Nos soins","🔁 Modifier / annuler RDV","📍 Nous trouver","💬 Parler à un humain"],
+    pickService:"Parfait. Pour quel soin souhaitez-vous un rendez-vous ?",
+    pickDay:"Très bien. Quel jour vous conviendrait ?",
+    pickTime:"Et à quelle heure ?",
+    askName:"C'est noté. À quel nom dois-je réserver ?",
+    askPhone:"Merci ! Un numéro de téléphone pour vous confirmer le RDV ?",
+    confirmTitle:"Rendez-vous enregistré",
+    fService:"Soin",fDay:"Jour",fTime:"Heure",fName:"Nom",fPhone:"Téléphone",
+    done:"C'est fait ✅ La clinique vous contactera pour confirmer. À très vite !",
+    tarifsHead:"Voici nos tarifs indicatifs :",
+    hoursMsg:`Nous sommes ouverts : <strong>${CLINIC.hours.fr}</strong>.`,
+    servicesMsg:"Voici les soins que nous proposons :",
+    findMsg:`📍 ${CLINIC.address.fr}<br>📞 ${CLINIC.phone}`,
+    human:"Bien sûr. Laissez-moi votre nom et votre numéro, un membre de l'équipe vous rappelle vite.",
+    fallback:"Je peux vous aider pour un rendez-vous, les tarifs, les horaires ou nos soins. Que souhaitez-vous ?",
+    back:"↩︎ Retour au menu", pricesLabel:"Tarifs",
+    urgIntro:`Nous comprenons que c'est urgent. En cas de douleur intense, de gonflement ou de saignement, appelez-nous tout de suite au <span class="ltr">${CLINIC.phone}</span>. Laissez-moi votre nom et votre numéro, nous vous rappelons en priorité.`,
+    urgAskName:"Quel est votre nom ?",
+    urgAskPhone:"Et votre numéro pour vous rappeler immédiatement ?",
+    urgTitle:"🚨 Demande urgente — prioritaire",
+    urgDone:"Votre demande est enregistrée en priorité 🚨 Nous vous rappelons au plus vite. Prenez soin de vous.",
+    modIntro:"Bien sûr. Je vous aide à modifier ou annuler votre rendez-vous.",
+    modAskName:"À quel nom est le rendez-vous ?",
+    modAskPhone:"Et votre numéro de téléphone ?",
+    modAskNote:"Que souhaitez-vous ? (nouvelle date, ou « annuler »)",
+    modTitle:"🔁 Demande de modification",
+    fNote:"Demande",
+    modDone:"Votre demande a été transmise ✅ La clinique vous confirmera rapidement."
+  },
+  en:{ dir:'ltr', status:"Online · instant reply",
+    hello:`Hi and welcome to <strong>${CLINIC.name.en}</strong> 👋 How can I help you?`,
+    home:["🚨 Emergency","📅 Book appointment","💳 Prices","🕐 Opening hours","🦷 Our care","🔁 Reschedule / cancel","📍 Find us","💬 Talk to a human"],
+    pickService:"Great. Which treatment would you like to book?",
+    pickDay:"Perfect. Which day works for you?",
+    pickTime:"And what time?",
+    askName:"Noted. Under which name should I book?",
+    askPhone:"Thanks! A phone number to confirm your appointment?",
+    confirmTitle:"Appointment saved",
+    fService:"Treatment",fDay:"Day",fTime:"Time",fName:"Name",fPhone:"Phone",
+    done:"All set ✅ The clinic will contact you to confirm. See you soon!",
+    tarifsHead:"Here are our indicative prices:",
+    hoursMsg:`We are open: <strong>${CLINIC.hours.en}</strong>.`,
+    servicesMsg:"Here are the treatments we offer:",
+    findMsg:`📍 ${CLINIC.address.en}<br>📞 ${CLINIC.phone}`,
+    human:"Of course. Leave your name and number and a team member will call you back shortly.",
+    fallback:"I can help with an appointment, prices, opening hours or our treatments. What would you like?",
+    back:"↩︎ Back to menu", pricesLabel:"Prices",
+    urgIntro:`We understand this is urgent. If you have severe pain, swelling or bleeding, call us right now at <span class="ltr">${CLINIC.phone}</span>. Leave me your name and number and we'll call you back as a priority.`,
+    urgAskName:"What is your name?",
+    urgAskPhone:"And your number so we can call you back immediately?",
+    urgTitle:"🚨 Urgent request — priority",
+    urgDone:"Your request is logged as a priority 🚨 We'll call you back as soon as possible. Take care.",
+    modIntro:"Of course. I'll help you reschedule or cancel your appointment.",
+    modAskName:"Under which name is the appointment?",
+    modAskPhone:"And your phone number?",
+    modAskNote:"What would you like? (new date, or type \"cancel\")",
+    modTitle:"🔁 Change request",
+    fNote:"Request",
+    modDone:"Your request has been sent ✅ The clinic will confirm shortly."
+  }
+};
+
+let lang='ar', state={step:'home',draft:{}};
+const chat=document.getElementById('chat'), chips=document.getElementById('chips'),
+      field=document.getElementById('field'), send=document.getElementById('send');
+function L(){return T[lang];}
+function scroll(){chat.scrollTop=chat.scrollHeight;}
+function bubble(html,who='bot'){const d=document.createElement('div');d.className='msg '+who;d.innerHTML=html;chat.appendChild(d);scroll();}
+function ltr(x){return `<span class="ltr">${x}</span>`;}
+function setChips(list){chips.innerHTML='';list.forEach(c=>{const b=document.createElement('button');
+  b.className='chip'+(c.gold?' gold':'');b.innerHTML=c.label;b.onclick=c.act;chips.appendChild(b);});}
+function typing(cb){const t=document.createElement('div');t.className='typing';
+  t.innerHTML='<span></span><span></span><span></span>';chat.appendChild(t);scroll();
+  setTimeout(()=>{t.remove();cb();},550);}
+function botSay(html,then){typing(()=>{bubble(html,'bot');then&&then();});}
+
+function nextDays(n){const out=[],loc=lang==='ar'?'ar-DZ':(lang==='fr'?'fr-FR':'en-US');
+  for(let i=1;i<=n;i++){const d=new Date();d.setDate(d.getDate()+i);
+    out.push({label:d.toLocaleDateString(loc,{weekday:'short',day:'numeric',month:'short'})});}
+  return out;}
+const SLOTS=['09:00','10:00','11:00','14:00','15:00','16:00','17:00'];
+
+function home(){state={step:'home',draft:{}};setChips(L().home.map((label,i)=>({label,act:()=>menu(i)})));}
+function menu(i){const label=L().home[i];bubble(label,'me');
+  if(i===0)startUrgent();
+  else if(i===1)startBooking();
+  else if(i===2)showPrices();
+  else if(i===3)botSay(L().hoursMsg,home);
+  else if(i===4)showServices();
+  else if(i===5)startModify();
+  else if(i===6)botSay(L().findMsg,home);
+  else if(i===7){state.step='human_name';botSay(L().human,()=>setChips([{label:L().back,act:resetHome}]));}}
+function resetHome(){botSay(L().hello,home);}
+function startBooking(){botSay(L().pickService,()=>{
+  setChips(CLINIC.services.map(s=>({label:`${s[lang]} · ${ltr(s.price)}`,act:()=>{
+    state.draft.service=s[lang];bubble(s[lang],'me');pickDay();}}))
+    .concat([{label:L().back,act:resetHome}]));});}
+function pickDay(){botSay(L().pickDay,()=>{setChips(nextDays(6).map(d=>({label:ltr(d.label),act:()=>{
+  state.draft.day=d.label;bubble(ltr(d.label),'me');pickTime();}})));});}
+function pickTime(){botSay(L().pickTime,()=>{setChips(SLOTS.map(t=>({label:ltr(t),act:()=>{
+  state.draft.time=t;bubble(ltr(t),'me');askName();}})));});}
+function askName(){state.step='book_name';chips.innerHTML='';botSay(L().askName,()=>field.focus());}
+function askPhone(){state.step='book_phone';botSay(L().askPhone,()=>field.focus());}
+function finishBooking(){const d=state.draft;leads.push({...d});sendLead({...d,type:'RDV'});
+  console.log('📥 NOUVEAU LEAD',d,'| total:',leads.length);
+  /* 👉 GRATUIT plus tard : envoyer le lead par email via Formspree (formspree.io) :
+     fetch('https://formspree.io/f/XXXX',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); */
+  const c=document.createElement('div');c.className='confirm';
+  c.innerHTML=`<div class="ok">✅ ${L().confirmTitle}</div>
+    <div class="row"><span>${L().fService}</span><span>${d.service}</span></div>
+    <div class="row"><span>${L().fDay}</span><span>${ltr(d.day)}</span></div>
+    <div class="row"><span>${L().fTime}</span><span>${ltr(d.time)}</span></div>
+    <div class="row"><span>${L().fName}</span><span>${d.name}</span></div>
+    <div class="row"><span>${L().fPhone}</span><span>${ltr(d.phone)}</span></div>`;
+  chat.appendChild(c);scroll();botSay(L().done,home);}
+function showPrices(){botSay(L().tarifsHead,()=>{
+  const rows=CLINIC.services.map(s=>`<div class="row"><span>${s[lang]}</span><span>${ltr(s.price)}</span></div>`).join('');
+  const c=document.createElement('div');c.className='confirm';
+  c.innerHTML=`<div class="ok">💳 ${L().pricesLabel}</div>${rows}`;chat.appendChild(c);scroll();
+  setChips([{label:L().home[1],gold:true,act:()=>menu(1)},{label:L().back,act:resetHome}]);});}
+/* ---- Urgence (prioritaire, sans conseil médical) ---- */
+function startUrgent(){state.draft={urgent:true};botSay(L().urgIntro,()=>{state.step='urg_name';chips.innerHTML='';field.focus();});}
+function finishUrgent(){const d=state.draft;leads.push({...d,type:'URGENT'});sendLead({...d,type:'URGENT'});
+  console.log('🚨 LEAD URGENT',d,'| total:',leads.length);
+  const c=document.createElement('div');c.className='confirm urgent';
+  c.innerHTML=`<div class="ok">${L().urgTitle}</div>
+    <div class="row"><span>${L().fName}</span><span>${d.name}</span></div>
+    <div class="row"><span>${L().fPhone}</span><span>${ltr(d.phone)}</span></div>`;
+  chat.appendChild(c);scroll();botSay(L().urgDone,home);}
+/* ---- Modifier / annuler ---- */
+function startModify(){state.draft={type:'MODIF'};botSay(L().modIntro,()=>botSay(L().modAskName,()=>{state.step='mod_name';chips.innerHTML='';field.focus();}));}
+function finishModify(){const d=state.draft;leads.push({...d});sendLead({...d,type:'MODIF'});
+  console.log('🔁 LEAD MODIF',d,'| total:',leads.length);
+  const c=document.createElement('div');c.className='confirm';
+  c.innerHTML=`<div class="ok">${L().modTitle}</div>
+    <div class="row"><span>${L().fName}</span><span>${d.name}</span></div>
+    <div class="row"><span>${L().fPhone}</span><span>${ltr(d.phone)}</span></div>
+    <div class="row"><span>${L().fNote}</span><span>${d.note}</span></div>`;
+  chat.appendChild(c);scroll();botSay(L().modDone,home);}
+function showServices(){botSay(L().servicesMsg,()=>{
+  setChips(CLINIC.services.map(s=>({label:s[lang],act:()=>{
+    state.draft={service:s[lang]};bubble(s[lang],'me');pickDay();}}))
+    .concat([{label:L().back,act:resetHome}]));});}
+
+function handleText(txt){bubble(txt,'me');field.value='';
+  if(state.step==='book_name'){state.draft.name=txt;askPhone();return;}
+  if(state.step==='book_phone'){state.draft.phone=txt;finishBooking();return;}
+  if(state.step==='urg_name'){state.draft.name=txt;state.step='urg_phone';botSay(L().urgAskPhone,()=>field.focus());return;}
+  if(state.step==='urg_phone'){state.draft.phone=txt;finishUrgent();return;}
+  if(state.step==='mod_name'){state.draft.name=txt;state.step='mod_phone';botSay(L().modAskPhone,()=>field.focus());return;}
+  if(state.step==='mod_phone'){state.draft.phone=txt;state.step='mod_note';botSay(L().modAskNote,()=>field.focus());return;}
+  if(state.step==='mod_note'){state.draft.note=txt;finishModify();return;}
+  if(state.step==='human_name'){botSay(L().done.replace('✅',''),home);return;}
+  const t=txt.toLowerCase();
+  if(/(urgen|douleur|mal|pain|emergency|swell|bleed|abcès|abces|طارئ|طوارئ|ألم|الم|وجع|نزيف|تورم)/.test(t))return startUrgent();
+  if(/(annul|report|modif|reschedul|cancel|change|déplacer|deplacer|تعديل|إلغاء|الغاء|تأجيل|تغيير)/.test(t))return startModify();
+  if(/(rdv|rendez|book|appoint|réserv|reserv|موعد|حجز)/.test(t))return startBooking();
+  if(/(prix|tarif|price|cost|combien|سعر|اسعار|أسعار|بكم|ثمن)/.test(t))return showPrices();
+  if(/(horaire|ouvert|heure|hour|open|وقت|اوقات|أوقات|مفتوح|ساعة)/.test(t))return botSay(L().hoursMsg,home);
+  if(/(soin|service|care|treatment|blanchiment|implant|whiten|خدمة|خدمات|تبييض|زرع)/.test(t))return showServices();
+  if(/(adresse|où|address|find|location|localis|عنوان|موقع|اين|أين|وين)/.test(t))return botSay(L().findMsg,home);
+  botSay(L().fallback,home);}
+send.onclick=()=>{const v=field.value.trim();if(v)handleText(v);};
+field.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=field.value.trim();if(v)handleText(v);}});
+
+document.querySelectorAll('.langs button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('.langs button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');lang=b.dataset.l;
+    document.documentElement.lang=lang;document.documentElement.dir=L().dir;
+    document.getElementById('cName').textContent=CLINIC.name[lang];
+    document.getElementById('cStatus').textContent=L().status;
+    chat.innerHTML='';botSay(L().hello,home);};
+});
+
+document.getElementById('cName').textContent=CLINIC.name[lang];
+document.getElementById('cStatus').textContent=L().status;
+botSay(L().hello,home);
+</script>
+</body>
+</html>
